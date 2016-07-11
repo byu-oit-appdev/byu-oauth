@@ -156,7 +156,7 @@ exports.generateAuthorizationURL = function (grantType, clientID, redirectURI) {
 			getWellKnown().then(function (wellKnown) {
 
 				//	send URL to callback
-				callback(wellKnown[AUTHORIZATION]
+				callback(null, wellKnown[AUTHORIZATION]
 					+ "?response_type=" + responseType
 					+ "&client_id=" + clientID
 					+ "&redirect_uri=" + redirectURI
