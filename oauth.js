@@ -34,7 +34,7 @@ if (require.main === module) {
 	}
 	if (method === OAuth.getAccessToken) {
 		functionCall = method(grantType, args);
-	} else if (method === OAuth.getRedirectURL) {
+	} else if (method === OAuth.generateAuthorizationURL) {
 		functionCall = method(grantType, process.argv[4], process.argv[5]);
 	}
 	functionCall.then(function (err, res) {
