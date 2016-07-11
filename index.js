@@ -133,7 +133,7 @@ exports.getAccessToken = function (grantType, args) {
 	}
 }
 
-exports.getRedirectURL = function (grantType, clientID, redirectURI) {
+exports.generateAuthorizationURL = function (grantType, clientID, redirectURI) {
 	return {
 		then: function (callback) {
 
