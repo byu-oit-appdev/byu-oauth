@@ -1,0 +1,23 @@
+{
+  "name": "byu-oauth",
+  "version": "1.0.0",
+  "description": "Handles the OAuth2.0 flow for BYU APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byu-oit-appdev/byu-oauth.git"
+  },
+  "keywords": [
+    "byu",
+    "oauth"
+  ],
+  "author": "brettbeatty",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/byu-oit-appdev/byu-oauth/issues"
+  },
+  "homepage": "https://github.com/byu-oit-appdev/byu-oauth#readme"
+}
