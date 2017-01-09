@@ -165,5 +165,6 @@ module.exports = {
 	getAccessToken,
 	generateAuthorizationURL,
 	getWellKnown,
-	grant_type
+	grant_type,
+	grantType: grant_type
 };
