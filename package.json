@@ -14,7 +14,10 @@
     "byu",
     "oauth"
   ],
-  "author": "brettbeatty",
+  "author": {
+    "name": "Brett Beatty",
+    "email": "brett_beatty@byu.edu"
+  },
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/byu-oit-appdev/byu-oauth/issues"
