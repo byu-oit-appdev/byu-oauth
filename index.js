@@ -1,195 +1,169 @@
-const AUTHORIZATION = "authorization_endpoint";
-const AUTHORIZATION_CODE = "code";
+'use strict';
+
+const https = require('https');
+
+const AUTHORIZATION = 'authorization_endpoint';
+const AUTHORIZATION_CODE = 'code';
 const CLIENT_ID = 'client_id';
 const CLIENT_SECRET = 'client_secret';
 const PASSWORD = 'password';
 const REDIRECT_URI = 'redirect_uri';
+const TOKEN = 'token_endpoint';
 const USERNAME = 'username';
-const TOKEN = "token_endpoint";
-const WELL_KNOWN = "https://api.byu.edu/.well-known/openid-configuration";
-
-var http = require('https');
+const WELL_KNOWN = 'https://api.byu.edu/.well-known/openid-configuration';
 
 //	various errors that can be returned by the module
-var error = {
-	accessToken: "Could not acquire access token.  Returned code ",
-	grantType: {
-		token: "Invalid grant type to get access token.  Valid types are "
-			 + "authorization_code, client_credentials, and password (resource owner).",
-		url: "Invalid grant type to get redirect URL.  Valid types are authorization_code and implicit"
+const error = {
+	access_token: 'Could not acquire access token. Returned code: ',
+	grant_type: {
+		token: 'Invalid grant type to get access token. Valid types are authorization_code, client_credentials, and password (resource owner).',
+		url: 'Invalid grant type to get redirect URL. Valid types are authorization_code and implicit.'
 	},
-	missingArgs: "Missing arguments ",
-	noAuthorization: "Could not retrieve authorization code.  Please check that your client ID is correct"
-		+ " and that your redirect URL reflects that specified in WSO2."
+	missing_args: 'Missing arguments: ',
+	no_authorization: 'Could not retrieve authorization code. Please check that your client ID is correct and that your redirect URL reflects that specified in WSO2.'
 };
 
-//	the grant types the module supports
-var grantType = exports.grantType = {
-	AUTHORIZATION_CODE: "authorization_code",
-	CLIENT_CREDENTIALS: "client_credentials",
-	IMPLICIT: "implicit",
-	RESOURCE_OWNER: "password"
+//	the grant types the modules supports
+const grant_type = {
+	AUTHORIZATION_CODE: 'authorization_code',
+	CLIENT_CREDENTIALS: 'client_credentials',
+	IMPLICIT: 'implicit',
+	RESOURCE_OWNER: 'password'
 };
 
 //	the arguments required for getting access tokens for each grant type
-var requiredArgs = {};
-requiredArgs[grantType.AUTHORIZATION_CODE] = [CLIENT_ID, CLIENT_SECRET, AUTHORIZATION_CODE, REDIRECT_URI];
-requiredArgs[grantType.CLIENT_CREDENTIALS] = [CLIENT_ID, CLIENT_SECRET];
-requiredArgs[grantType.RESOURCE_OWNER] = [CLIENT_ID, CLIENT_SECRET, USERNAME, PASSWORD];
+let required_args = {};
+required_args[grant_type.AUTHORIZATION_CODE] = [CLIENT_ID, CLIENT_SECRET, AUTHORIZATION_CODE, REDIRECT_URI];
+required_args[grant_type.CLIENT_CREDENTIALS] = [CLIENT_ID, CLIENT_SECRET];
+required_args[grant_type.RESOURCE_OWNER] = [CLIENT_ID, CLIENT_SECRET, USERNAME, PASSWORD];
 
-//	checks to make sure all arguments for grant type are given
-function checkArgs(grantType, args, callback) {
+//	the response types available for authorization url
+let response_types = {};
+response_types[grant_type.AUTHORIZATION_CODE] = 'code';
+response_types[grant_type.IMPLICIT] = 'token';
 
-	//	validate grant type for retrieving access token
-	if (!requiredArgs.hasOwnProperty(grantType)) {
-		callback(new Error(error.grantType.token));
-		return false;
-	}
+function checkArgs(grant_type, args) {
+	let missing = [];
+	let required = required_args[grant_type];
+
+	//	validate grant type
+	if (required == null)
+		return Promise.reject(new Error(error.grant_type.token));
 
 	//	add any missing arguments to 'missing' array
-	var required = requiredArgs[grantType];
-	var missing = [];
-	for (var i = 0; i < required.length; i++) {
-		if (!args.hasOwnProperty(required[i])) missing.push(required[i]);
-	}
+	for (let i = 0; i < required.length; i++)
+		if (!args.hasOwnProperty(required[i]))
+			missing.push(required[i]);
 
 	//	if 'missing' array is not empty, return error with missing arguments
-	if (missing.length > 0) {
-		callback(new Error(error.missingArgs + missing));
-		return false;
-	}
+	if (missing.length > 0)
+		return Promise.reject(new Error(error.missing_args + missing));
 
-	//	if 'missing' array is empty, all arguments are accounted for
-	return true;
+	//	'missing' array is empty; all arguments are accounted for
+	return Promise.resolve();
 }
 
-exports.getAccessToken = function (grantType, args) {
+function getAccessToken(grant_type, args) {
 
-	return {
-		then: function (callback) {
+	//	check for correct arguments, then get BYU API well-known
+	return checkArgs(grant_type, args).then(getWellKnown).then((well_known) => new Promise((resolve, reject) => {
+		let authorization, body, hostname, path, request, target_url;
 
-			//	if grant type is bad, stop execution (error has already been sent to callback)
-			if (!checkArgs(grantType, args, callback)) return;
+		//	break apart URL for request
+		target_url = well_known[TOKEN].slice(well_known[TOKEN].indexOf('//') + 2);
+		hostname = target_url.slice(0, target_url.indexOf('/'));
+		path = target_url.slice(target_url.indexOf('/'));
 
-			//	get BYU API well-known
-			getWellKnown().then(function (wellKnown) {
+		//	authorize with client ID & secret
+		authorization = 'Basic ' + new Buffer(args[CLIENT_ID] + ':' + args[CLIENT_SECRET]).toString('base64');
+		
+		//	don't include client_id or client_secret in query parameters
+		delete args[CLIENT_ID];
+		delete args[CLIENT_SECRET];
 
-				//	get parts of URL to which to send request for access token
-				var targetURL = wellKnown[TOKEN];
-				targetURL = targetURL.slice(targetURL.indexOf("//") + 2);
-				var hostname = targetURL.slice(0, targetURL.indexOf("/"));
-				var path = targetURL.slice(targetURL.indexOf("/"));
+		//	construct message body
+		body = 'grant_type=' + grant_type;
+		for (let arg in args) body += '&' + arg + '=' + args[arg];
 
-				//	authorize with client ID & secret
-				var authorization = "Basic " 
-					+ new Buffer(args[CLIENT_ID] + ":" + args[CLIENT_SECRET]).toString("base64");
-
-				//	construct request for access token
-				var request = http.request({
-					hostname: hostname,
-					path: path,
-					method: "POST",
-					headers: {
-						"Authorization": authorization,
-						"Content-Type": "application/x-www-form-urlencoded"
-					}
-				}, function (response) {
-
-					response.setEncoding("utf8");
-					response.on("data", function (data) {
-
-						//	send token to callback
-						callback(null, JSON.parse(data));
-
-					}).on("end", function () {
-
-						//	if response other than 200 send error to callback
-						if (response.statusCode != 200) callback(error.clientCredentials
-							+ response.statusCode + ": " + response.statusMessage);
-
-					});
-				}).on("error", function (err) {
-
-					//	if there's an error sending the request, send it to callback
-					callback(err);
-
-				});
-
-				//	done with client id and secret
-				delete args[CLIENT_ID], args[CLIENT_SECRET];
-
-				//	construct message body
-				var body = "grant_type=" + grantType;
-				for (var arg in args) {
-					body += "&" + arg + "=" + args[arg];
-				}
-
-				//	send request
-				request.write(body);
-				request.end();
-			});
-
-		}
-	}
+		//	send request
+		request = https.request({
+			hostname: hostname,
+			path: path,
+			method: 'POST',
+			headers: {
+				'Authorization': authorization,
+				'Content-Type': 'application/x-www-form-urlencoded'
+			}
+		}, parseResponse(resolve, reject, 'getting access token: ')).on('error', reject);
+		request.write(body);
+		request.end();
+	}));
 }
 
-exports.generateAuthorizationURL = function (grantType, clientID, redirectURI) {
-	return {
-		then: function (callback) {
+function generateAuthorizationURL(grant_type, client_id, redirect_uri) {
 
-			//	if missing arguments, send error to callback
-			var missing = [];
-			if (grantType == null) missing.push("grantType");
-			if (clientID == null) missing.push("clientID");
-			if (redirectURI == null) missing.push("redirectURI");
+	return getWellKnown().then((well_known) => new Promise((resolve, reject) => {
 
-			//	get response type
-			var responseTypes = {};
-			responseTypes[exports.grantType.AUTHORIZATION_CODE] = "code";
-			responseTypes[exports.grantType.IMPLICIT] = "token";
-			var responseType = responseTypes[grantType];
+		//	check arguments
+		let missing = [];
+		if (grant_type == null) missing.push('grant_type');
+		if (client_id == null) missing.push('client_id');
+		if (redirect_uri == null) missing.push('redirect_uri');
 
-			//	if bad grant type, send error to callback
-			if (responseType == null) callback(new Error(error.grantType.url));
+		//	get response type
+		let response_type = response_types[grant_type];
 
-			//	get BYU API well-known
-			getWellKnown().then(function (wellKnown) {
+		//	check grant_type
+		if (response_type == null) reject(new Error(error.grant_type.url));
 
-				//	send URL to callback
-				callback(null, wellKnown[AUTHORIZATION]
-					+ "?response_type=" + responseType
-					+ "&client_id=" + clientID
-					+ "&redirect_uri=" + redirectURI
-					+ "&scope=openid");
-
-			});
-
-		}
-	}
+		//	construct URL
+		resolve(well_known[AUTHORIZATION]
+			+ '?response_type=' + response_type
+			+ '&client_id=' + client_id
+			+ '&redirect_uri=' + redirect_uri
+			+ '&scope=openid');
+	}));
 }
 
-//	gets the information in BYU API well-known
 function getWellKnown() {
-	return {
-		then: function (callback) {
 
-			//	send GET request to URL
-			http.get(exports.wellKnown, function (response) {
+	return new Promise((resolve, reject) => {
 
-				//	construct response body
-				var body = "";
-				response.on("data", function (data) {
-					body += data;
-				}).on("end", function () {
-
-					//	send JSON response to callback
-					callback(JSON.parse(body));
-
-				});
-			});
-		}
-	}
+		https.get(WELL_KNOWN, parseResponse(resolve, reject, 'getting well-known: '))
+			.on('error', reject);
+	});
 }
 
-//	allows easy changes to well-known URL
-exports.wellKnown = WELL_KNOWN;
+function parseResponse(resolve, reject, prefix) {
+
+	if (prefix == null) prefix = '';
+
+	return (response) => {
+
+		response.setEncoding('utf8');
+		response.on('data', (data) => {
+
+			try {
+
+				resolve(JSON.parse(data));
+
+			} catch (exception) {
+
+				reject(new Error(prefix + data));
+			}
+		});
+		response.on('end', () => {
+
+			if (response.statusCode != 200)
+				reject(new Error(prefix + response.statusCode + ": " + response.statusMessage));
+		});
+	};
+}
+
+//	exports functions and grant types
+module.exports = {
+	getAccessToken,
+	generateAuthorizationURL,
+	getWellKnown,
+	grant_type
+};
