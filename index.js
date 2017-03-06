@@ -8,6 +8,7 @@ const CLIENT_ID = 'client_id';
 const CLIENT_SECRET = 'client_secret';
 const PASSWORD = 'password';
 const REDIRECT_URI = 'redirect_uri';
+const REFRESH_TOKEN = 'refresh_token';
 const TOKEN = 'token_endpoint';
 const USERNAME = 'username';
 const WELL_KNOWN = 'https://api.byu.edu/.well-known/openid-configuration';
@@ -16,7 +17,7 @@ const WELL_KNOWN = 'https://api.byu.edu/.well-known/openid-configuration';
 const error = {
 	access_token: 'Could not acquire access token. Returned code: ',
 	grant_type: {
-		token: 'Invalid grant type to get access token. Valid types are authorization_code, client_credentials, and password (resource owner).',
+		token: 'Invalid grant type to get access token. Valid types are authorization_code, client_credentials, password (resource owner), and refresh_token.',
 		url: 'Invalid grant type to get redirect URL. Valid types are authorization_code and implicit.'
 	},
 	missing_args: 'Missing arguments: ',
@@ -28,6 +29,7 @@ const grant_type = {
 	AUTHORIZATION_CODE: 'authorization_code',
 	CLIENT_CREDENTIALS: 'client_credentials',
 	IMPLICIT: 'implicit',
+	REFRESH_TOKEN: 'refresh_token',
 	RESOURCE_OWNER: 'password'
 };
 
@@ -35,6 +37,7 @@ const grant_type = {
 let required_args = {};
 required_args[grant_type.AUTHORIZATION_CODE] = [CLIENT_ID, CLIENT_SECRET, AUTHORIZATION_CODE, REDIRECT_URI];
 required_args[grant_type.CLIENT_CREDENTIALS] = [CLIENT_ID, CLIENT_SECRET];
+required_args[grant_type.REFRESH_TOKEN] = [CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN];
 required_args[grant_type.RESOURCE_OWNER] = [CLIENT_ID, CLIENT_SECRET, USERNAME, PASSWORD];
 
 //	the response types available for authorization url
