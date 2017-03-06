@@ -35,6 +35,21 @@ OAuth.getAccessToken(OAuth.grant_type.CLIENT_CREDENTIALS, {
   console.error(err);
 });
 
+OAuth.getAccessToken(OAuth.grant_type.REFRESH_TOKEN, {
+  client_id: /*client id*/,
+  client_secret: /*client secret*/
+  refresh_token: /*refresh token*/
+}).then(function (token) {
+  
+  //  use token here
+  console.log(token);
+
+}).catch(function (err) {
+  
+  //  handle error here
+  console.error(err);
+});
+
 OAuth.getAccessToken(OAuth.grant_type.RESOURCE_OWNER, {
   client_id: /*client id*/,
   client_secret: /*client secret*/,
