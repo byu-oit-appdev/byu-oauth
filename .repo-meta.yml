@@ -8,8 +8,8 @@ maintained_by:
   - brettbeatty
 developed_by_byu: True
 links:
-  system_documentation_url: https://github.com/byu-oit-appdev/byu-oauth
-  source_repo_url: https://github.com/byu-oit-appdev/byu-oauth
+  system_documentation_url: https://github.com/byu-oit/byu-oauth
+  source_repo_url: https://github.com/byu-oit/byu-oauth
 microservice: True
 technologies_used:
   - JavaScript
@@ -31,5 +31,5 @@ tags:
   env: prd
   app: byu-oauth
   team: gro:AD-Student Life Applications
-federation_json_url: https://raw.githubusercontent.com/byu-oit-appdev/byu-oauth/master/.repo-meta.yml
+federation_json_url: https://raw.githubusercontent.com/byu-oit/byu-oauth/master/.repo-meta.yml
 
