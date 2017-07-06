@@ -1,35 +1,33 @@
---- 
-$schemaver: 1.1
-name: byu-oauth
-type: Library
-short_description: Node.JS Library for OAuth2.0 flows with the BYU API Manager
-assignment_group: gro:AD-Student Life Applications
-maintained_by:
-  - brettbeatty
-developed_by_byu: True
-links:
-  system_documentation_url: https://github.com/byu-oit/byu-oauth
-  source_repo_url: https://github.com/byu-oit/byu-oauth
-microservice: True
-technologies_used:
-  - JavaScript
-  - OAuth
-  - NodeJS
-  - WSO2 API Manager
-stages:
-  production:
-    hosting_location: Other
-    relationships: 
-      depends_on:
-        software:
-          - WSO2 API Gateway
-      supports:
-        software:
-        - github-push-event
-tags:
-  data-sensitivity: confidential
-  env: prd
-  app: byu-oauth
-  team: gro:AD-Student Life Applications
-federation_json_url: https://raw.githubusercontent.com/byu-oit/byu-oauth/master/.repo-meta.yml
-
+---
+$schemaver: 2.0
+repo_url: https://github.com/byu-oit/byu-oauth
+software:
+  - name: byu-oauth
+    type: Library
+    short_description: Node.JS Library for OAuth2.0 flows with the BYU API Manager
+    assignment_group: gro:AD-Student Life Applications
+    maintained_by:
+      - brettbeatty
+    developed_by_byu: true
+    links:
+        system_documentation_url: https://github.com/byu-oit/byu-oauth
+    microservice: true
+    technologies_used:
+      - JavaScript
+      - OAuth
+      - NodeJS
+      - WSO2 API Manager
+    stages:
+        production:
+            hosting_location: Other
+            relationships:
+                depends_on:
+                    software:
+                      - WSO2 API Gateway
+                supports:
+                    software:
+                      - github-push-event
+    tags:
+        data-sensitivity: confidential
+        app: byu-oauth
+        team: gro:AD-Student Life Applications
