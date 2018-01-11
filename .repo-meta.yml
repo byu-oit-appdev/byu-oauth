@@ -1,5 +1,4 @@
----
-$schemaver: '2.0'
+$schemaver: 2.1
 repo_url: https://github.com/byu-oit/byu-oauth
 software:
   - name: byu-oauth
@@ -10,7 +9,7 @@ software:
       - brettbeatty
     developed_by_byu: true
     links:
-        system_documentation_url: https://github.com/byu-oit/byu-oauth
+      system_documentation_url: https://github.com/byu-oit/byu-oauth
     microservice: true
     technologies_used:
       - JavaScript
@@ -18,16 +17,13 @@ software:
       - NodeJS
       - WSO2 API Manager
     stages:
-        production:
-            hosting_location: Other
-            relationships:
-                depends_on:
-                    software:
-                      - WSO2 API Gateway
-                supports:
-                    software:
-                      - github-push-event
-    tags:
-        data-sensitivity: confidential
-        app: byu-oauth
-        team: gro:AD-Student Life Applications
+      production:
+        hosting_location: Other
+        relationships:
+          depends_on:
+            software:
+              - WSO2 API Gateway Web Service Production
+          supports:
+            software:
+              - github-push-event Web Service Production
+    data_sensitivity: confidential
