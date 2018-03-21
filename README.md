@@ -1,3 +1,5 @@
+**Note**: The only dependency upon this repo is by github-push-event, so when that repo is retired, this one should be too.
+
 # byu-oauth
 Handles the OAuth2.0 flow for BYU APIs
 
