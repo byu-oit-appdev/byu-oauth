@@ -6,7 +6,6 @@ software:
     short_description: Node.JS Library for OAuth2.0 flows with the BYU API Manager
     assignment_group: gro:AD-Student Life Applications
     maintained_by:
-      - brettbeatty
     developed_by_byu: true
     links:
       system_documentation_url: https://github.com/byu-oit/byu-oauth
